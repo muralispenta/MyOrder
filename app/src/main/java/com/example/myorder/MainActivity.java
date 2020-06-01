@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(odderDetailsAdapter);
 
+        fetchNextPageOffers();
+
     }
 
     
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void fetchNextPageOffers() {
 
-
+     Oreder oreder = getIntent().getParcelableExtra("order");
         OrderInterface cancerApiService = OrderApiAdapter.getClient
                 (getApplicationContext()).create(OrderInterface.class);
 
@@ -76,7 +78,9 @@ public class MainActivity extends AppCompatActivity {
         RequestBody body = RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"),
                 jsonObject.toString());
 
-        Call<OrderResponse> call = cancerApiService.order("","","");
+        
+        Call<OrderResponse> call = cancerApiService.order(oreder != null ? oreder.getOrderTitle() : null,
+                oreder != null ? oreder.getAdded_on() : null, oreder != null ? oreder.getImage() : null);
 
         call.enqueue(new Callback<OrderResponse>() {
             @Override

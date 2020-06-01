@@ -22,6 +22,7 @@ public class OrderApiAdapter {
     private static volatile OkHttpClient okHttpClient;
 
     public static Retrofit getClient(Context context) {
+        OkHttpClient okHttpClient = getHttpClient(context);
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .create();
@@ -36,6 +37,7 @@ public class OrderApiAdapter {
     }
 
     public static Retrofit getRegionApiClient(Context context) {
+        OkHttpClient okHttpClient = getHttpClient(context);
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .create();
@@ -48,7 +50,29 @@ public class OrderApiAdapter {
         return regionRetrofit;
     }
 
+    private static OkHttpClient getHttpClient(Context context) {
+        if (okHttpClient != null) return okHttpClient;
+        OkHttpClient.Builder builder = new OkHttpClient().newBuilder()
+                .retryOnConnectionFailure(true)
+                .connectTimeout(10, TimeUnit.MINUTES)
+                //.callTimeout(0, TimeUnit.MINUTES)
+                .writeTimeout(10, TimeUnit.MINUTES)
+                .readTimeout(10, TimeUnit.MINUTES);
+      /*  builder.interceptors().add(new Interceptor() {
+            @NonNull
+            @Override
+            public Response intercept(@NonNull Chain chain) throws IOException {
+                return onOnIntercept(chain, listener);
+            }
+        });*/
 
+      /*  Interceptor loggingInterceptor = getHttpLoggingInterceptor(context);
+        if (loggingInterceptor != null) {
+            builder.addInterceptor(loggingInterceptor);
+        }*/
+        okHttpClient = builder.build();
+        return okHttpClient;
+    }
 
     private static Interceptor getHttpLoggingInterceptor(Context context) {
 
@@ -67,5 +91,18 @@ public class OrderApiAdapter {
     }
 
 
+   /* private static Response onOnIntercept(Interceptor.Chain chain, OnConnectionTimeoutListener listener)
+            throws IOException {
+        try {
+            Response response = chain.proceed(chain.request());
+            String content = response.body().toString();
+            return response.newBuilder().body(ResponseBody.create(response.body().contentType(), content)).build();
+        } catch (SocketTimeoutException exception) {
+            exception.printStackTrace();
+            if (listener != null)
+                listener.onConnectionTimeout();
+        }
+        return chain.proceed(chain.request());
+    }*/
 }
 
