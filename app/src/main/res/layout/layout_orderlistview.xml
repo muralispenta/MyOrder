@@ -16,10 +16,10 @@
 
         <FrameLayout
             android:id="@+id/imgContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="105dp"
+            android:layout_height="105dp"
             android:layout_alignWithParentIfMissing="true"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="25dp"
             android:background="@color/white">
 
             <ImageView
@@ -47,12 +47,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 android:layout_marginTop="5dp"
+                android:layout_weight="1"
                 android:background="@drawable/rectangle_bagrdound"
+                android:gravity="center"
                 android:text="Order Details"
                 android:textColor="@color/block"
                 android:textSize="12sp"
-                android:gravity="center"
-                android:layout_weight="1"
                 android:visibility="visible" />
 
 
@@ -61,12 +61,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
-                android:layout_marginEnd="5dp"
                 android:layout_marginTop="5dp"
-                android:background="@drawable/rectangle_bagrdound"
-                android:text="cancel"
-                android:gravity="center"
+                android:layout_marginEnd="5dp"
                 android:layout_weight="1"
+                android:background="@drawable/rectangle_bagrdound"
+                android:gravity="center"
+                android:text="cancel"
                 android:textColor="@color/block"
                 android:textSize="12sp"
                 android:visibility="visible" />
@@ -78,8 +78,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="25dp"
             android:layout_toEndOf="@+id/imgContainer"
+            android:text="gfgfvgg"
+            android:textColor="@color/block"
+            android:textSize="12sp"
+            android:visibility="visible" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_weight="1"
+            android:text="Order Id  # "
             android:textColor="@color/block"
             android:textSize="12sp"
             android:visibility="visible" />
@@ -112,10 +124,11 @@
             android:id="@+id/txtOfferTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/imgContainer"
             android:layout_marginLeft="2dp"
             android:layout_marginTop="2dp"
             android:layout_marginRight="2dp"
+            android:layout_marginBottom="2dp"
+            android:text="dsfsdfdsfdsf"
             android:textColor="@color/block"
             android:textSize="14sp"
             android:visibility="visible" />

@@ -1,122 +1,103 @@
 package com.example.myorder;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Canvas;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.util.EventLogTags;
-import android.view.View;
+import android.widget.Toast;
 
-import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.Map;
 
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     private OdderDetailsAdapter odderDetailsAdapter;
-    private ArrayList<Oreder> oreders = new ArrayList<>();
     private RecyclerView recyclerView;
+    OrderInterface orderInterface;
+    List<Datum> datumList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        datumList = new ArrayList<>();
         recyclerView = (RecyclerView) findViewById(R.id.recyclerViewList);
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(OrderInterface.BASE_URL_LIVE).addConverterFactory(GsonConverterFactory.create()).build();
+        orderInterface = retrofit.create(OrderInterface.class);
 
-        odderDetailsAdapter = new OdderDetailsAdapter(oreders);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(odderDetailsAdapter);
 
         fetchNextPageOffers();
 
     }
 
-    
-    private void  checkInternetConnection(){
+
+    private void checkInternetConnection() {
         ConnectivityManager conMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
-        if (netInfo == null){
+        if (netInfo == null) {
             new AlertDialog.Builder(MainActivity.this)
                     .setTitle(getResources().getString(R.string.app_name))
-                    .setMessage("intgernetError")
-                    .setPositiveButton("OK", null).show();
+                    .setMessage("intgernetError").show();
         }
     }
 
     private void fetchNextPageOffers() {
 
-     Oreder oreder = getIntent().getParcelableExtra("order");
-        OrderInterface cancerApiService = OrderApiAdapter.getClient
-                (getApplicationContext()).create(OrderInterface.class);
+        ConnectivityManager conMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = conMgr.getActiveNetworkInfo();
+        if (netInfo == null) {
+            new AlertDialog.Builder(MainActivity.this)
+                    .setMessage("Please check your internet connections").show();
+        } else {
 
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put(Constans.API_KEY, "2308691");
-            jsonObject.put(Constans.LANGUAGE, "en");
-            jsonObject.put(Constans.USERID, "15");
-                   } catch (Exception ignored) {
-        }
-        RequestBody body = RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"),
-                jsonObject.toString());
+            datumList.clear();
 
-        
-        Call<OrderResponse> call = cancerApiService.order(oreder != null ? oreder.getOrderTitle() : null,
-                oreder != null ? oreder.getAdded_on() : null, oreder != null ? oreder.getImage() : null);
-
-        call.enqueue(new Callback<OrderResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<OrderResponse> call,
-                                   @NonNull Response<OrderResponse> response) {
-
-               if (response.body() != null && response.isSuccessful()){
-                   setOfferAdapter(response.body().offerArrayList);
-               }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<OrderResponse> call, @NonNull Throwable t) {
-
-            }
-        });
-    }
-
-
-
-        private void setOfferAdapter(ArrayList<Oreder> offers) {
-
-
-            odderDetailsAdapter = new OdderDetailsAdapter(oreders);
-            recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-            recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
-                    DividerItemDecoration.VERTICAL) {
+            Map<String, Object> parametes = new HashMap<String, Object>();
+            parametes.put(Constans.API_KEY, 2308691);
+            parametes.put(Constans.LANGUAGE, "en");
+            parametes.put(Constans.USERID, 15);
+            Call<Order> call = orderInterface.order(parametes);
+            call.enqueue(new Callback<Order>() {
                 @Override
-                public void onDraw(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
-                    // Do not draw the divider
+                public void onResponse(Call<Order> call, Response<Order> response) {
+                    if (response.body() != null && response.isSuccessful() && response.body().getStatus().equals(1)) {
+                        for (int i = 0; i < response.body().getData().size(); i++) {
+                            Datum datum = new Datum();
+                            datum.setImage(response.body().getData().get(i).getImage());
+                            datum.setAddedOn(response.body().getData().get(i).getAddedOn());
+                            datum.setOrderId(response.body().getData().get(i).getOrderId());
+                            datum.setOrderTitle(response.body().getData().get(i).getOrderTitle());
+                            datum.setOrderStatus(response.body().getData().get(i).getOrderStatus());
+                            datum.setPaidAmount(response.body().getData().get(i).getPaidAmount());
+                            datumList.add(datum);
+                            //Toast.makeText(MainActivity.this, "" + response.body().getData().get(i).getOrderTitle(), Toast.LENGTH_SHORT).show();
+
+                        }
+                        odderDetailsAdapter = new OdderDetailsAdapter(MainActivity.this, datumList, response.body().getBaseUrl());
+                        recyclerView.setAdapter(odderDetailsAdapter);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Order> call, Throwable t) {
+                    // Toast.makeText(MainActivity.this, ""+t.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
 
 
-            recyclerView.setAdapter(odderDetailsAdapter);
         }
 
-
+    }
 }
